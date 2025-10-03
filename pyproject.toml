@@ -1,7 +1,42 @@
 [project]
 name = "robopicker"
 version = "0.1.0"
-description = "Training VLAs on SO-101"
-readme = "README.md"
-requires-python = ">=3.10"
-dependencies = []
+description = "SO-101 MuJoCo Simulation for Pick and Place with LeRobot"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    # MuJoCo physics engine (NOT included in lerobot base)
+    "mujoco>=3.0.0,<4.0.0",
+
+    # Scipy for numerical IK (alternative to placo)
+    "scipy>=1.10.0",
+
+    # LeRobot with kinematics (for placo IK)
+    # Note: lerobot base includes: gymnasium, numpy, pynput, opencv, imageio
+    "lerobot[kinematics]",
+]
+
+[tool.uv.sources]
+lerobot = { path = "lerobot", editable = true }
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.1.0",
+    "black>=24.0.0",
+    "ruff>=0.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["robopicker*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
