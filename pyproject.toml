@@ -1,0 +1,7 @@
+[project]
+name = "robopicker"
+version = "0.1.0"
+description = "Training VLAs on SO-101"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
