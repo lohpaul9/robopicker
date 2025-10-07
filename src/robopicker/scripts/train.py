@@ -42,9 +42,10 @@ from lerobot.datasets.transforms import ImageTransforms
 from lerobot.datasets.utils import cycle
 from lerobot.envs.factory import make_env
 from lerobot.optim.factory import make_optimizer_and_scheduler
-from lerobot.policies.factory import make_policy
+from lerobot.policies.factory import make_policy, make_pre_post_processors
 from lerobot.policies.pretrained import PreTrainedPolicy
 from lerobot.policies.utils import get_device_from_parameters
+from lerobot.processor import PolicyProcessorPipeline
 from lerobot.scripts.lerobot_eval import eval_policy
 from lerobot.rl.wandb_utils import WandBLogger
 from lerobot.utils.logging_utils import AverageMeter, MetricsTracker
@@ -62,6 +63,9 @@ from lerobot.utils.utils import (
     has_method,
     init_logging,
 )
+
+import os
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:128'
 
 
 def load_splits_yaml(raw_dataset_dir: Path) -> dict:
@@ -111,6 +115,7 @@ def make_lerobot_dataset_with_episodes(cfg: TrainPipelineConfig, episodes: list[
 
 def eval_policy_on_dataset(
     policy: PreTrainedPolicy,
+    preprocessor: PolicyProcessorPipeline[dict[str, Any], dict[str, Any]],
     eval_dataset: LeRobotDataset,
     device: torch.device,
     train_batch_size: int,
@@ -135,6 +140,8 @@ def eval_policy_on_dataset(
     
     with torch.no_grad():
         for batch in eval_dataloader:
+            batch = preprocessor(batch)
+
             # Move batch to device
             for key in batch:
                 if isinstance(batch[key], torch.Tensor):
@@ -339,6 +346,38 @@ def train(cfg: TrainPipelineConfig):
         ds_meta=train_dataset.meta,
     )
 
+    # Create processors - only provide dataset_stats if not resuming from saved processors
+    processor_kwargs = {}
+    postprocessor_kwargs = {}
+    if (cfg.policy.pretrained_path and not cfg.resume) or not cfg.policy.pretrained_path:
+        # Only provide dataset_stats when not resuming from saved processor state
+        processor_kwargs["dataset_stats"] = train_dataset.meta.stats
+
+    if cfg.policy.pretrained_path is not None:
+        processor_kwargs["preprocessor_overrides"] = {
+            "device_processor": {"device": device.type},
+            "normalizer_processor": {
+                "stats": train_dataset.meta.stats,
+                "features": {**policy.config.input_features, **policy.config.output_features},
+                "norm_map": policy.config.normalization_mapping,
+            },
+        }
+        postprocessor_kwargs["postprocessor_overrides"] = {
+            "unnormalizer_processor": {
+                "stats": train_dataset.meta.stats,
+                "features": policy.config.output_features,
+                "norm_map": policy.config.normalization_mapping,
+            },
+        }
+
+    preprocessor, postprocessor = make_pre_post_processors(
+        policy_cfg=cfg.policy,
+        pretrained_path=cfg.policy.pretrained_path,
+        **processor_kwargs,
+        **postprocessor_kwargs,
+    )
+
+
     logging.info("Creating optimizer and scheduler")
     optimizer, lr_scheduler = make_optimizer_and_scheduler(cfg, policy)
     grad_scaler = GradScaler(device.type, enabled=cfg.policy.use_amp)
@@ -377,10 +416,11 @@ def train(cfg: TrainPipelineConfig):
         train_dataset,
         num_workers=cfg.num_workers,
         batch_size=cfg.batch_size,
-        shuffle=shuffle,
+        shuffle=shuffle and not cfg.dataset.streaming,
         sampler=sampler,
         pin_memory=device.type == "cuda",
         drop_last=False,
+        prefetch_factor=2,
     )
     dl_iter = cycle(dataloader)
 
@@ -402,11 +442,8 @@ def train(cfg: TrainPipelineConfig):
     for _ in range(step, cfg.steps):
         start_time = time.perf_counter()
         batch = next(dl_iter)
+        batch = preprocessor(batch)
         train_tracker.dataloading_s = time.perf_counter() - start_time
-
-        for key in batch:
-            if isinstance(batch[key], torch.Tensor):
-                batch[key] = batch[key].to(device, non_blocking=device.type == "cuda")
 
         train_tracker, output_dict = update_policy(
             train_tracker,
@@ -480,6 +517,7 @@ def train(cfg: TrainPipelineConfig):
                 start_time = time.perf_counter()
                 eval_results = eval_policy_on_dataset(
                     policy,
+                    preprocessor,
                     eval_dataset,
                     device,
                     train_batch_size=cfg.batch_size,
@@ -513,7 +551,7 @@ def train(cfg: TrainPipelineConfig):
         if should_save_checkpoint:
             logging.info(f"Checkpoint policy after step {step} ({checkpoint_reason})")
             checkpoint_dir = get_step_checkpoint_dir(cfg.output_dir, cfg.steps, step)
-            save_checkpoint(checkpoint_dir, step, cfg, policy, optimizer, lr_scheduler)
+            save_checkpoint(checkpoint_dir, step, cfg, policy, optimizer, lr_scheduler, preprocessor, postprocessor)
             update_last_checkpoint(checkpoint_dir)
             # if wandb_logger:
             #     wandb_logger.log_policy(checkpoint_dir)
@@ -534,7 +572,8 @@ def train(cfg: TrainPipelineConfig):
 
     if cfg.policy.push_to_hub:
         policy.push_model_to_hub(cfg)
-
+        preprocessor.push_to_hub(cfg.policy.repo_id)
+        postprocessor.push_to_hub(cfg.policy.repo_id)
 
 def main():
     init_logging()
