@@ -45,7 +45,8 @@ from lerobot.optim.factory import make_optimizer_and_scheduler
 from lerobot.policies.factory import make_policy
 from lerobot.policies.pretrained import PreTrainedPolicy
 from lerobot.policies.utils import get_device_from_parameters
-from lerobot.scripts.eval import eval_policy
+from lerobot.scripts.lerobot_eval import eval_policy
+from lerobot.rl.wandb_utils import WandBLogger
 from lerobot.utils.logging_utils import AverageMeter, MetricsTracker
 from lerobot.utils.random_utils import set_seed
 from lerobot.utils.train_utils import (
@@ -61,7 +62,6 @@ from lerobot.utils.utils import (
     has_method,
     init_logging,
 )
-from lerobot.utils.wandb_utils import WandBLogger
 
 
 def load_splits_yaml(raw_dataset_dir: Path) -> dict:
@@ -80,9 +80,14 @@ def get_episode_indices_from_names(episode_names: list[str]) -> list[int]:
     """Convert episode names to indices by extracting the numeric prefix."""
     indices = []
     for name in episode_names:
-        # Extract the numeric prefix before the first underscore
-        episode_id = int(name.split('_')[0])
-        indices.append(episode_id)
+        # episode_name is either a single number or a string that starts with "<number>_<record_time>"
+        if "_" in name:
+            # Extract the numeric prefix before the first underscore
+            episode_id = int(name.split('_')[0])
+            indices.append(episode_id)
+        else:
+            episode_id = int(name)
+            indices.append(episode_id)
     return indices
 
 def make_lerobot_dataset_with_episodes(cfg: TrainPipelineConfig, episodes: list[int]) -> LeRobotDataset:
@@ -293,7 +298,8 @@ def train(cfg: TrainPipelineConfig):
     eval_dataset = None
     if cfg.dataset.raw_dataset_root is not None:
         # Get the raw dataset directory by combining raw_dataset_root with the last component of repo_id
-        dataset_name = cfg.dataset.repo_id.split('/')[-1]
+        dataset_name = "__".join(cfg.dataset.repo_id.split('/'))
+        logging.info(f"Dataset name: {dataset_name}")
         raw_dataset_dir = Path(cfg.dataset.raw_dataset_root) / dataset_name
         
         logging.info(f"Loading splits from {raw_dataset_dir / 'splits.yaml'}")
