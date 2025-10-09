@@ -21,7 +21,7 @@
       <camera name="top" pos="0.2 0.25 0.5" quat="0.707107 0 0 0.707107" fovy="60"/>
 
       <!-- Front camera - angled view showing robot and workspace in front -->
-      <camera name="front" pos="0.3 0.5 0.3" mode="targetbody" target="base" fovy="65"/>
+      <camera name="front" pos="0.25 0.45 0.2" mode="targetbody" target="base" fovy="65"/>
       <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1" specular=".3 .3 .3"/>
       <light pos="0.2 0.3 .5" mode="targetbodycom" target="block" diffuse=".8 .8 .8" specular=".3 .3 .3"/>
       <geom name="floor" size="3 3 0.01" type="plane" material="grid"/>
@@ -30,6 +30,21 @@
       <body name="block" pos="0.2 0.15 .012">
         <freejoint name="block"/>
         <geom name="block" type="box" size=".015 .015 .015" mass="0.1" rgba=".6 .3 .6 1"/>
+      </body>
+
+      <!-- Container for drop task - positioned to the right of robot -->
+      <body name="container" pos="0.3 0.15 0.013">
+        <!-- Container dimensions: 8cm x 8cm x 2cm height (inner ~7cm x 7cm) -->
+        <!-- Wall thickness: 0.5cm, Wall height: 2cm -->
+
+        <!-- Bottom plate -->
+        <geom name="container_bottom" type="box" size="0.04 0.04 0.003" pos="0 0 -0.010" rgba="0.8 0.6 0.4 1"/>
+
+        <!-- Side walls (half-size Z = 0.01 for 2cm total height) -->
+        <geom name="container_side_x_neg" type="box" size="0.003 0.04 0.01" pos="-0.037 0 0" rgba="0.8 0.6 0.4 1"/>
+        <geom name="container_side_x_pos" type="box" size="0.003 0.04 0.01" pos="0.037 0 0" rgba="0.8 0.6 0.4 1"/>
+        <geom name="container_side_y_neg" type="box" size="0.04 0.003 0.01" pos="0 -0.037 0" rgba="0.8 0.6 0.4 1"/>
+        <geom name="container_side_y_pos" type="box" size="0.04 0.003 0.01" pos="0 0.037 0" rgba="0.8 0.6 0.4 1"/>
       </body>
 
       <!-- Mocap target for operational space control -->
