@@ -5,6 +5,7 @@
 robot:
   type: so101_mujoco
   xml_path: SO101/pick_scene.xml
+  cube_positions_path: configs/cube_positions.json  # Predefined block positions for episodes
   # Control frequencies
   record_fps: 30      # Recording/dataset frequency
   control_fps: 180    # Internal control loop frequency
