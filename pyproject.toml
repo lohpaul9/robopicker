@@ -24,12 +24,17 @@ dev = [
     "ruff>=0.1.0",
 ]
 
+# SmolVLA policy dependencies (lerobot core deps come from workspace lerobot)
+smolvla = [
+    "lerobot[smolvla]",  # This pulls in all smolvla deps from the workspace lerobot
+]
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["robopicker*"]
 
 [tool.ruff]

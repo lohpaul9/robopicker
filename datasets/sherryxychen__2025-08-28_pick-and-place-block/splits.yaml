@@ -1,0 +1,25 @@
+train:
+- !!str 000000
+- !!str 000001
+- !!str 000002
+- !!str 000003
+- !!str 000004
+- !!str 000005
+- !!str 000006
+- !!str 000007
+- !!str 000008
+- !!str 000009
+val_id:
+- !!str 000010
+- !!str 000011
+- !!str 000012    
+- !!str 000013
+- !!str 000014
+statistics:
+  train_count: 10
+  val_id_count: 5
+  val_ood_count: 0
+  total_count: 15
+  train_ratio: 0.67
+  val_id_ratio: 0.33
+  val_ood_ratio: 0.0

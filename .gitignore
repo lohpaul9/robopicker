@@ -29,7 +29,7 @@ uv.lock
 *.mjb
 
 # Datasets
-datasets/
+episodes/
 data/
 *.hdf5
 *.zarr
@@ -50,3 +50,4 @@ checkpoints/
 htmlcov/
 
 .claude/
+CLAUDE.md
