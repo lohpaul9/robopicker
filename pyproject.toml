@@ -11,14 +11,11 @@ dependencies = [
     # LeRobot with kinematics (for placo IK)
     # Note: lerobot base includes: gymnasium, numpy, pynput, opencv, imageio
     "lerobot[kinematics]",
-    # gym-hil for MuJoCo simulation environments
-    "gym-hil",
     "matplotlib>=3.10.6",
 ]
 
 [tool.uv.sources]
 lerobot = { path = "lerobot", editable = true }
-gym-hil = { path = "gym-hil", editable = true }
 
 [project.optional-dependencies]
 dev = [
