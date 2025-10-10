@@ -1,0 +1,66 @@
+# SO-101 MuJoCo Recording Configuration
+# Usage: lerobot-record --config configs/so101_mujoco_record.yaml
+
+# Robot configuration
+robot:
+  type: so101_mujoco
+  xml_path: SO101/pick_scene.xml
+  cube_positions_path: configs/cube_positions.json  # Predefined block positions for episodes
+  # Control frequencies
+  record_fps: 30      # Recording/dataset frequency
+  control_fps: 180    # Internal control loop frequency
+  physics_fps: 360    # MuJoCo physics frequency
+  # Camera configuration
+  camera_width: 640
+  camera_height: 480
+  camera_names: [front, top, wrist]
+  show_collision_geometry: true  # Show collision geometry (red semi-transparent convex hulls)
+  # Control parameters
+  lin_speed: 0.04
+  yaw_speed: 1.20
+  grip_speed: 0.7
+  # Orientation control gains
+  ori_gain: 6.0
+  tilt_deadzone: 0.03
+  tilt_wmax: 6.0
+  # Jacobian damping
+  lambda_pos: 0.01
+  lambda_tilt: 0.0001
+  # Rate limiting
+  vel_limit: 0.5
+  vel_limit_wrist: 8.0
+  smooth_dq: 0.30
+  smooth_dq_wrist: 0.08
+  # Gravity compensation
+  wrist_gff_gain: 0.5
+  # Safety
+  table_z: 0.0
+  clearance: 0.07
+  # End-effector
+  ee_site_name: wrist_site
+  tool_axis_site: [0.0, -1.0, 0.0]
+
+# Teleoperator configuration
+teleop:
+  type: so101_keyboard
+
+# Dataset configuration
+dataset:
+  repo_id: lohpaul/so101_mujoco_test
+  root: ./datasets  # Local directory for inspection
+  single_task: "Test SO-101 MuJoCo manipulation"
+  fps: 30
+  episode_time_s: 60
+  reset_time_s: 10
+  num_episodes: 5
+  video: true
+  push_to_hub: false  # Set to true when ready to upload
+  private: false
+  num_image_writer_processes: 0
+  num_image_writer_threads_per_camera: 4
+  video_encoding_batch_size: 1
+
+# Display configuration
+display_data: false  # Set to true to use rerun visualization
+play_sounds: true
+resume: false
