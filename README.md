@@ -1,60 +1,78 @@
 # RoboPicker
 
-SO-101 robotic arm simulation with IK-based Cartesian control for teleoperation and LeRobot integration.
+SO-101 robotic arm simulation in MuJoCo with LeRobot integration for behavior cloning dataset collection.
 
 ## Quick Start
 
+### Recording Demonstrations
+
 ```bash
-# Install dependencies
-uv sync
 source .venv/bin/activate
-
-# Run teleoperation
-MUJOCO_GL=glfw mjpython gym-hil/gym_hil/so101/scripts/so101_teleop_continuous.py
-
-# Run validation test
-MUJOCO_GL=glfw mjpython gym-hil/gym_hil/so101/tests/test_so101_teleop.py
+python lerobot/src/lerobot/scripts/lerobot_record.py \
+    --config configs/so101_mujoco_record.yaml
 ```
 
+**Note**: Edit `configs/so101_mujoco_record.yaml` to set your dataset repo ID and recording parameters.
+
 **Keyboard Controls:**
-- Arrow keys: Move in X-Y plane
-- Shift/Shift_R: Move in Z axis
-- O/C keys: Open/close gripper
-- Enter/Backspace: Success/failure
-- Space: Toggle intervention
+- **W/S**: Move forward/backward (Y-axis)
+- **A/D**: Move left/right (X-axis)
+- **Q/E**: Move up/down (Z-axis)
+- **[/]**: Rotate wrist left/right
+- **O/C**: Open/close gripper
+- **ESC**: Stop recording
 
-## What's Working
+### Replaying Episodes
 
-✅ **IK-based Cartesian Control** - Position-delta based teleoperation with excellent stability
-- X-axis movement: 100% accuracy
-- Position holding: <3mm drift
-- Orthogonal stability: <3.5mm drift in Y/Z during X motion
+```bash
+source .venv/bin/activate
+python lerobot/src/lerobot/scripts/lerobot_replay.py \
+    --robot.type=so101_mujoco \
+    --robot.xml_path=SO101/pick_scene.xml \
+    --dataset.repo_id=your_username/dataset_name \
+    --dataset.episode=0
+```
 
-## Technical Details
+**Note**: Cube positions are automatically restored from episode metadata.
 
-**IK Control Approach:**
-1. Actions are position deltas that accumulate to a target position
-2. Levenberg-Marquardt IK computes target joint angles
-3. Joint-space PD control reaches those angles
-4. Zero-action transitions lock target to current position (prevents drift)
+## Overview
 
-**Why IK instead of Operational Space Control:**
-- Panda's operational space controller moves SO-101 backwards (incompatible task-space inertia matrix)
-- IK-based approach avoids problematic matrices and achieves 100% accuracy
+This project integrates the SO-101 5-DOF robot arm with HuggingFace LeRobot for sim-to-real behavior cloning research. The system enables intuitive keyboard teleoperation in simulation to collect high-quality demonstration datasets.
+
+### LeRobot Integration
+
+We extend LeRobot's `Robot` base class to support MuJoCo simulation with custom teleoperation:
+
+- **Custom Robot Class**: `SO101MujocoRobot` implements LeRobot's robot interface for MuJoCo
+- **Keyboard Teleop**: Purpose-built teleoperator converts keyboard input to end-effector velocities
+- **Multi-Rate Control**: Records actions at 30 Hz while running control at 180 Hz and physics at 360 Hz
+- **Dataset Compatibility**: Produces standard LeRobot datasets compatible with training pipelines
+
+The robot implementation lives in `lerobot/src/lerobot/robots/so101_mujoco/` and integrates seamlessly with LeRobot's recording and replay scripts.
+
+### SO-101 Assets
+
+The simulation uses physically accurate SO-101 assets located in `SO101/`:
+
+- **Robot Model**: `pick_scene.xml` contains the complete scene with robot, table, objects, and cameras
+- **Collision Geometry**: Uses convex decomposition for accurate gripper collision (see [asset_processing.md](SO101/asset_processing.md))
+- **Scene Objects**: Includes manipulable cube and container for pick-and-place tasks
+
+**Important**: The original gripper meshes created a large "invisible hitbox" due to MuJoCo's single-convex-hull limitation. We solved this using CoACD to decompose the gripper into 24 tight-fitting convex hulls (12 per jaw). This provides accurate collision without performance penalty. See `SO101/asset_processing.md` for technical details.
 
 ## Installation
 
 **Prerequisites:**
-- Python 3.10
+- Python 3.10+
 - [uv](https://github.com/astral-sh/uv) package manager
 
 **Setup:**
 ```bash
-# Clone with submodules
+# Clone repository
 git clone --recursive https://github.com/lohpaul9/robopicker.git
 cd robopicker
 
-# Install
+# Install dependencies
 uv sync
 source .venv/bin/activate
 ```
@@ -68,14 +86,69 @@ See [MuJoCo #1923](https://github.com/google-deepmind/mujoco/issues/1923)
 
 ## Project Structure
 
-- `gym-hil/` - Gym-HIL submodule (editable install)
-  - `gym_hil/so101/` - SO-101 environments and scripts
-  - `gym_hil/controllers/` - IK control implementation
-  - `gym_hil/assets/SO101/` - Robot model
-- `pyproject.toml` - Main dependencies
+```
+robopicker/
+├── lerobot/                      # LeRobot fork (submodule)
+│   └── src/lerobot/robots/
+│       └── so101_mujoco/         # SO-101 robot implementation
+├── SO101/                        # Scene files and robot assets
+│   ├── pick_scene.xml           # Main scene definition
+│   ├── asset_processing.md      # Collision geometry docs
+│   └── assets/                  # Robot meshes and collision hulls
+├── configs/
+│   ├── so101_mujoco_record.yaml # Recording configuration
+│   └── cube_positions.json      # Predefined object positions
+└── datasets/                     # Local dataset storage
+```
+
+## Configuration
+
+Edit `configs/so101_mujoco_record.yaml` to customize:
+
+- **Control frequencies**: `record_fps`, `control_fps`, `physics_fps`
+- **Camera settings**: Resolution, camera names, collision geometry visibility
+- **Dataset options**: HuggingFace repo, local storage, video encoding
+- **Object positions**: Path to predefined cube positions JSON
+
+## Key Features
+
+### Multi-Rate Control Architecture
+- **30 Hz**: Dataset recording frequency
+- **180 Hz**: Internal control loop (Jacobian, IK, gravity compensation)
+- **360 Hz**: MuJoCo physics timestep
+
+All frequencies are exact multiples to prevent timing drift.
+
+### Episode Metadata
+Each episode stores custom metadata (object positions, task parameters) in the dataset's parquet files for reproducibility and analysis.
+
+### Predefined Object Positions
+Episodes use configured object positions from `configs/cube_positions.json` instead of random placement, ensuring consistent initial conditions.
+
+## Development Progress
+
+**Completed:**
+- ✅ SO-101 MuJoCo robot implementation with LeRobot integration
+- ✅ Keyboard teleoperation with end-effector control
+- ✅ Multi-rate control (30/180/360 Hz)
+- ✅ Multi-camera rendering with GLFW visualization
+- ✅ Episode metadata storage for object positions
+- ✅ Predefined object position system
+- ✅ Gripper collision geometry fix via convex decomposition
+- ✅ Recording and replay functionality
+- ✅ Scene objects (cube, container)
+
+**In Progress:**
+- Training policies on collected datasets
+- Sim-to-real transfer experiments
 
 ## Credits
 
-- IK implementation: [Basic IK in MuJoCo](https://alefram.github.io/posts/Basic-inverse-kinematics-in-Mujoco)
-- Base gym environments: HuggingFace LeRobot team
-- SO-101 model: [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100)
+- **LeRobot**: HuggingFace team - behavior cloning framework
+- **SO-101 Model**: [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100)
+- **Collision Fix**: CoACD convex decomposition algorithm
+
+## References
+
+- **Robot Implementation**: `lerobot/src/lerobot/robots/so101_mujoco/README.md`
+- **Collision Geometry**: `SO101/asset_processing.md`
