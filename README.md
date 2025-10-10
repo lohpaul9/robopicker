@@ -84,6 +84,42 @@ ln -sf ~/.local/share/uv/python/cpython-3.10.*/lib/libpython3.10.dylib .venv/lib
 ```
 See [MuJoCo #1923](https://github.com/google-deepmind/mujoco/issues/1923)
 
+**Alternative macOS mjpython fix:**
+
+NOTE: This didn't fix it for me on macOS. Instead I had to use the Python from `pyenv` instead of the one from `uv`
+(maybe this isn't a problem any more now that we don't use gym-hil?)
+```bash
+brew install pyenv
+export PYTHON_CONFIGURE_OPTS="--enable-framework"
+# Also need to install `xz` otherwise you'll see "No module named '_lzma'" error
+# when running LeRobot record.
+brew install xz
+```
+
+Add pyenv init lines to ~/.zshrc, then reload your shell:
+```bash
+# Add these lines if they’re not already present
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
+echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+exec $SHELL -l    # reload login shell
+```
+
+Now install Python 3.10.13 and recreate venv
+```bash
+pyenv install 3.10.13
+cd /path/to/robopicker
+pyenv local 3.10.13        # scoped to this repo only (creates .python-version)
+pyenv rehash
+
+# recreate .venv
+rm -rf .venv
+python -m venv .venv
+source .venv/bin/activate
+pip install -U uv
+uv sync
+```
+
 ## Project Structure
 
 ```
