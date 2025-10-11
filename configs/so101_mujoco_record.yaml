@@ -47,10 +47,10 @@ teleop:
 # Dataset configuration
 dataset:
   repo_id: lohpaul/so101_mujoco_test
-  root: ./datasets/2025-10-09_test-record  # Local directory for inspection
+  root: ./datasets/test-record  # Local directory for inspection
   single_task: "Test SO-101 MuJoCo manipulation"
   fps: 30
-  episode_time_s: 90
+  episode_time_s: 120
   reset_time_s: 10
   num_episodes: 5
   video: true
