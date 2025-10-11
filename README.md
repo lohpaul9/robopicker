@@ -4,10 +4,19 @@ SO-101 robotic arm simulation in MuJoCo with LeRobot integration for behavior cl
 
 ## Quick Start
 
+### Installation
+```bash
+uv sync
+source .venv/bin/activate
+```
+
+### Launch simulation scene
+```bash
+python -m mujoco.viewer --mjcf=SO101/pick_scene.xml
+```
 ### Recording Demonstrations
 
 ```bash
-source .venv/bin/activate
 python lerobot/src/lerobot/scripts/lerobot_record.py \
     --config configs/so101_mujoco_record.yaml
 ```
@@ -26,7 +35,6 @@ python lerobot/src/lerobot/scripts/lerobot_record.py \
 ### Replaying Episodes
 
 ```bash
-source .venv/bin/activate
 python lerobot/src/lerobot/scripts/lerobot_replay.py \
     --robot.type=so101_mujoco \
     --robot.xml_path=SO101/pick_scene.xml \

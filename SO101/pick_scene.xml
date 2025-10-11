@@ -29,22 +29,23 @@
       <!-- Block for pick task - positioned in robot's forward workspace (+Y direction) -->
       <body name="block" pos="0.2 0.15 .012">
         <freejoint name="block"/>
-        <geom name="block" type="box" size=".015 .015 .015" mass="0.1" rgba=".6 .3 .6 1"/>
+        <!-- Block dimensions: 2cm x 3cm x 1.5cm -->
+        <geom name="block" type="box" size=".01 .015 .0075" mass="0.1" rgba=".6 .3 .6 1"/>
       </body>
 
       <!-- Container for drop task - positioned to the right of robot -->
-      <body name="container" pos="0.3 0.15 0.013">
-        <!-- Container dimensions: 8cm x 8cm x 2cm height (inner ~7cm x 7cm) -->
+      <body name="container" pos="0.3 0.2 0.01">
+        <!-- Container dimensions: 9cm x 9cm x 2cm height (inner 8cm x 8cm) -->
         <!-- Wall thickness: 0.5cm, Wall height: 2cm -->
 
         <!-- Bottom plate -->
-        <geom name="container_bottom" type="box" size="0.04 0.04 0.003" pos="0 0 -0.010" rgba="0.8 0.6 0.4 1"/>
+        <geom name="container_bottom" type="box" size="0.045 0.045 0.0025" pos="0 0 -0.00975" rgba="0.8 0.6 0.4 1"/>
 
-        <!-- Side walls (half-size Z = 0.01 for 2cm total height) -->
-        <geom name="container_side_x_neg" type="box" size="0.003 0.04 0.01" pos="-0.037 0 0" rgba="0.8 0.6 0.4 1"/>
-        <geom name="container_side_x_pos" type="box" size="0.003 0.04 0.01" pos="0.037 0 0" rgba="0.8 0.6 0.4 1"/>
-        <geom name="container_side_y_neg" type="box" size="0.04 0.003 0.01" pos="0 -0.037 0" rgba="0.8 0.6 0.4 1"/>
-        <geom name="container_side_y_pos" type="box" size="0.04 0.003 0.01" pos="0 0.037 0" rgba="0.8 0.6 0.4 1"/>
+        <!-- Side walls -->
+        <geom name="container_side_x_neg" type="box" size="0.0025 0.04 0.01" pos="-0.0425 0 0" rgba="0.8 0.6 0.4 1"/>
+        <geom name="container_side_x_pos" type="box" size="0.0025 0.04 0.01" pos="0.0425 0 0" rgba="0.8 0.6 0.4 1"/>
+        <geom name="container_side_y_neg" type="box" size="0.045 0.0025 0.01" pos="0 -0.0425 0" rgba="0.8 0.6 0.4 1"/>
+        <geom name="container_side_y_pos" type="box" size="0.045 0.0025 0.01" pos="0 0.0425 0" rgba="0.8 0.6 0.4 1"/>
       </body>
 
       <!-- Mocap target for operational space control -->

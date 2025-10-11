@@ -1,0 +1,8 @@
+stratification_config:
+  axes:
+    start_pose.block.x: [0.023, 0.2]
+    start_pose.block.y: [0.034, 0.266]
+  bin_sizes:
+    start_pose.block.x: 0.0885
+    start_pose.block.y: 0.0773
+  desired_episodes_per_bin: 12

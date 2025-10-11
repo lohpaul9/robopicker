@@ -50,9 +50,9 @@ dataset:
   root: ./datasets/test-record  # Local directory for inspection
   single_task: "Test SO-101 MuJoCo manipulation"
   fps: 30
-  episode_time_s: 120
-  reset_time_s: 10
-  num_episodes: 5
+  episode_time_s: 500
+  reset_time_s: 1
+  num_episodes: 1
   video: true
   push_to_hub: false  # Set to true when ready to upload
   private: false
@@ -62,5 +62,5 @@ dataset:
 
 # Display configuration
 display_data: false  # Set to true to use rerun visualization
-play_sounds: true
+play_sounds: false
 resume: false
