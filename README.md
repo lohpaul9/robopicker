@@ -18,7 +18,8 @@ python lerobot/src/lerobot/scripts/lerobot_record.py \
 - **W/S**: Move forward/backward (Y-axis)
 - **A/D**: Move left/right (X-axis)
 - **Q/E**: Move up/down (Z-axis)
-- **[/]**: Rotate wrist left/right
+- **I/K**: Wrist flex up/down
+- **[/]**: Wrist roll left/right
 - **O/C**: Open/close gripper
 - **ESC**: Stop recording
 
@@ -165,7 +166,8 @@ Episodes use configured object positions from `configs/cube_positions.json` inst
 
 **Completed:**
 - ✅ SO-101 MuJoCo robot implementation with LeRobot integration
-- ✅ Keyboard teleoperation with end-effector control
+- ✅ Keyboard teleoperation with Jacobian-based XYZ control
+- ✅ Change to Manual wrist orientation control (flex and roll) - previously fixed downwards pointing
 - ✅ Multi-rate control (30/180/360 Hz)
 - ✅ Multi-camera rendering with GLFW visualization
 - ✅ Episode metadata storage for object positions
@@ -175,8 +177,9 @@ Episodes use configured object positions from `configs/cube_positions.json` inst
 - ✅ Scene objects (cube, container)
 
 **In Progress:**
-- Training policies on collected datasets
-- Sim-to-real transfer experiments
+- 🔄 Collecting manipulation datasets
+- 🔄 Training policies on collected datasets
+- 🔄 Sim-to-real transfer experiments
 
 ## Credits
 

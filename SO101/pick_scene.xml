@@ -21,7 +21,7 @@
       <camera name="top" pos="0.2 0.25 0.5" quat="0.707107 0 0 0.707107" fovy="60"/>
 
       <!-- Front camera - angled view showing robot and workspace in front -->
-      <camera name="front" pos="0.25 0.45 0.2" mode="targetbody" target="base" fovy="65"/>
+      <camera name="front" pos="0.25 0.5 0.05" euler="-1.4 0.2 3.14159" fovy="65"/>
       <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1" specular=".3 .3 .3"/>
       <light pos="0.2 0.3 .5" mode="targetbodycom" target="block" diffuse=".8 .8 .8" specular=".3 .3 .3"/>
       <geom name="floor" size="3 3 0.01" type="plane" material="grid"/>
