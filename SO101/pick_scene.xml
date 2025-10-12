@@ -1,7 +1,17 @@
 <mujoco model="SO101_Pick_Scene">
     <include file="so101_new_calib.xml"/>
 
-    <option timestep=".002" noslip_iterations="5" noslip_tolerance="0"/>
+    <option timestep=".001" noslip_iterations="20" noslip_tolerance="1e-6">
+      <!-- Improved contact solver for better grasping -->
+      <!-- Smaller timestep = better contact resolution -->
+      <flag contact="enable" override="enable"/>
+    </option>
+    
+    <default>
+      <!-- High friction for grasping -->
+      <!-- solimp: softer contacts = better force distribution, less penetration -->
+      <geom friction="1.0 0.005 0.0001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
+    </default>
 
     <statistic center="0.2 0.15 0.2" extent=".6"/>
 
@@ -27,10 +37,16 @@
       <geom name="floor" size="3 3 0.01" type="plane" material="grid"/>
 
       <!-- Block for pick task - positioned in robot's forward workspace (+Y direction) -->
-      <body name="block" pos="0.2 0.15 .012">
+      <body name="block" pos="0.2 0.15 .015">
         <freejoint name="block"/>
         <!-- Block dimensions: 2cm x 3cm x 1.5cm -->
-        <geom name="block" type="box" size=".01 .015 .0075" mass="0.1" rgba=".6 .3 .6 1"/>
+        <!-- High friction for reliable grasping -->
+        <!-- margin: prevents penetration by adding a buffer around geometry -->
+        <!-- condim: 4 = use friction cone with elliptic approximation for better grip -->
+        <!-- softer solimp: allows slight deformation, better force distribution -->
+        <geom name="block" type="box" size=".015 .015 .015" mass="0.05" rgba=".6 .3 .6 1" 
+              friction="2 0.01 0.0001" solimp="0.95 0.95 0.001" solref="0.02 1"
+              margin="0.003" condim="4"/>
       </body>
 
       <!-- Container for drop task - positioned to the right of robot -->
