@@ -9,6 +9,8 @@
 
 [Sherry](https://github.com/sherrychen1120) and [Paul](https://github.com/lohpaul9) team up to record our experience building a pipeline for training an SO-101 robot arm (pick-and-place) with simulation support, starting from building a simulation environment, an intuitive teleoperation interface, and training various policies on the collected dataset. This is our journey and thought processes along the way.
 
+Find our code [here](https://github.com/lohpaul9/robopicker).
+
 ---
 ```
  ___
